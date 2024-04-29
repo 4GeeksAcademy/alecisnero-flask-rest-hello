@@ -3,7 +3,6 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 class User(db.Model):
-    __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True, nullable=False)
     username = db.Column(db.String(120), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -26,9 +25,25 @@ class User(db.Model):
         }
 
 class Favorite(db.Model):
-    __tablename__ = 'favorite'
     id = db.Column(db.Integer, primary_key=True)
-    is_active = db.Column(db.Boolean(), unique=False, nullable=False)
+
+    #campos
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True) 
+    people_id = db.Column(db.Integer, db.ForeignKey('people.id'), nullable=True)
+    planet_id = db.Column(db.Integer, db.ForeignKey('planets.id'), nullable=True)
+
+    #Relations
+    user = db.relationship('User', backref=db.backref('favorite', lazy=True))
+    people = db.relationship('People', backref=db.backref('favorite', lazy=True))
+    planet = db.relationship('Planets', backref=db.backref('favorite', lazy=True))
+
+
+    """ people = db.relationship('People', back_populates='favorite', cascade='all, delete-orphan', single_parent=True)
+    planets = db.relationship('Planets', back_populates='favorite', cascade='all, delete-orphan', single_parent=True) """
+    """ favorite_id = db.Column(db.Integer, db.ForeignKey('favorite.favorite_id'), nullable=False)
+    people = db.relationship('Favorite', back_populates='people', single_parent=True, cascade='all, delete-orphan') """
+    """ favorite_id = db.Column(db.Integer, db.ForeignKey('favorite.favorite_id'), nullable=False)
+    planets = db.relationship('Favorite', back_populates='planets', single_parent=True, cascade='all, delete-orphan') """
 
     def __repr__(self):
         return '<favorite %r>' % self.id
@@ -36,27 +51,27 @@ class Favorite(db.Model):
     def serialize(self):
         return {
             "id": self.id,
+            "user_id": self.user_id ,
+            "people_id": self.people_id ,
+            "planet_id": self.planet_id ,
             # do not serialize the password, its a security breach
         }
+
     
 class People(db.Model):
-    __tablename__ = 'people'
     id = db.Column(db.Integer, primary_key=True, nullable=False) 
-    people_id = db.Column(db.Integer, db.ForeignKey('favorite.id'), nullable=False)
-    people_rel= db.relationship('Favorite')
     name = db.Column(db.String(120), unique=True, nullable=False)
     eye_color = db.Column(db.String(120), unique=False, nullable=True)
     height = db.Column(db.Integer, unique=False, nullable=True)
     skin_color = db.Column(db.String(120), unique=False, nullable=True)
     gender = db.Column(db.String(120), unique=False, nullable=True)
 
-    def __ref__(self):
+    def __repr__(self):
         return '<people %r>' % self.id
 
     def serialize(self):
         return {
             "id": self.id ,
-            "people_id": self.people_id,
             "name": self.name ,
             "eye_color": self.eye_color ,
             "height": self.height ,
@@ -65,10 +80,7 @@ class People(db.Model):
         }    
 
 class Planets(db.Model):
-    __tablename__ = 'plantes'
     id = db.Column(db.Integer, primary_key=True, nullable=False)
-    planets_id = db.Column(db.Integer, db.ForeignKey('planets.id'), nullable=False)
-    planets_rel = db.relationship('Favorite')
     name = db.Column(db.String(120), unique=False, nullable=False)
     diameter = db.Column(db.Integer, unique=False, nullable=True)
     gravity = db.Column(db.Integer, unique=False, nullable=True)
@@ -77,13 +89,12 @@ class Planets(db.Model):
     climate = db.Column(db.String(120), unique=False, nullable=True)
     rotation_period = db.Column(db.Integer, unique=False, nullable=True)
 
-    def __ref__(self):
-        return'<plantes %r>' %self.id
+    def __repr__(self):
+        return'<planets %r>' %self.id
     
     def serialize(self):
         return {
             "id": self.id ,
-            "planets_id": self.planets_id,
             "name": self.name ,
             "diameter": self.diameter ,
             "gravity": self.gravity ,
@@ -92,3 +103,4 @@ class Planets(db.Model):
             "climate": self.climate ,
             "rotation_period": self.rotation_period ,
         }
+
