@@ -103,6 +103,9 @@ def get_users_favorite():
         user_id = request.args.get('user_id')
         user_favorites = Favorite.query.filter_by(user_id=user_id).all()
         get_favorite = [favorite.serialize() for favorite in user_favorites]
+        print(user_id)
+        print(user_favorites)
+        print(get_favorite)
         return jsonify(get_favorite), 200
 
     except:
